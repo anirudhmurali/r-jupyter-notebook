@@ -1,12 +1,8 @@
-# quandl-jupyter-risk-modeling
+This quickstart consists of one microservice:
 
-This quickstart consists of two microservices:
+**Jupyter**: Runs [Jupyter](https://jupyter.org/) R notebook with data analysis libraries like ggplot2, dplyr, shiny installed for building, analysing and visualising models interactively.
 
-1. quandl: Fetches and stores data from [Quandl](https://www.quandl.com/) and stores them in Hasura. 
-
-2. jupyter: Runs [Jupyter](https://jupyter.org/) iPython notebook with scipy (and other data analysis libraries) installed for building, analysing and visualising models interactively.
-
-Follow along below to get the setup working on your cluster and also to understand how this quickstart works.
+Follow along below to get the setup working on your cluster.
 
 ## Prerequisites
 
@@ -23,7 +19,6 @@ $ # Login if you haven't already
 $ hasura login
 ```
 
-
 * You should also have [git](https://git-scm.com) installed.
 
 ```sh
@@ -34,68 +29,24 @@ $ git --version
 
 ```sh
 $ # Run the quickstart command to get the project
-$ hasura quickstart hasura/quandl-jupyter-risk-modeling
+$ hasura quickstart anirudhm/r-jupyter-notebook
 
 $ # Navigate into the Project
-$ cd quandl-jupyter-risk-modeling
+$ cd r-jupyter-notebook
 ```
-
-## Quandl
-
-Before you begin, head over to [Quandl](https://www.quandl.com/) and select the dataset you would like to use. In this case, we are going with the `Wiki EOD Stock Prices` dataset. Keep in mind the `Vendor Code` (In this case it is, `WIKI`) and `Datatable Code` (`PRICES` in this case) for the dataset.
-
-![Quandl 1](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/quandl1.png "Quandl 1")
-
-![Quandl 3](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/quandl3.png "Quandl 3")
-
-
-To fetch the data you need to have an `API Key` which you can get by getting an account with Quandl.
-
-![Quandl 2](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/quandl2.png "Quandl 2")
-
-Keep a note of your `API Key`.
-
-### Adding the Quandl `API Key` to Hasura secrets
-
-Sensitive data like API keys, tokens etc should be stored in Hasura secrets and then accessed as an environment variable in your app. Do the following to add your Quandl API Key to Hasura secrets.
-
-```sh
-$ # Paste the following into your terminal
-$ # Replace <API-KEY> with the API Key you got from Quandl
-$ hasura secret update quandl.api.key <API-KEY>
-```
-
-This value is injected as an environment variable (QUANDL_API_KEY) to the quandl service like so:
-
-```yaml
-env:
-- name: QUANDL_API_KEY
-  valueFrom:
-  secretKeyRef:
-    key: quandl.api.key
-    name: hasura-secrets
-```
-
-Check your `k8s.yaml` file inside `microservices/quandl/app` to check out the whole file.
-
-Next, let's deploy the app onto your cluster.
-
 ## Deploy app
 
-`Note: Deploy will not work if you have not followed the previous steps correctly`
-
 ```sh
-$ # Ensure that you are in the quandl-jupyter-risk-modeling directory
+$ # Ensure that you are in the r-jupyter-notebook directory
 $ # Git add, commit & push to deploy to your cluster
 $ git add .
 $ git commit -m 'First commit'
 $ git push hasura master
 ```
-
-Once the above commands complete successfully, your cluster will have two services `jupyter` and `quandl` running. To get their URLs
+Once the above commands complete successfully, your cluster will have `jupyter` service  running. To get their URLs
 
 ```sh
-$ # Run this in the quandl-jupyter-risk-modeling directory
+$ # Run this in the r-jupyter-notebook directory
 $ hasura microservice list
 ```
 
@@ -104,7 +55,6 @@ $ hasura microservice list
 • Custom microservices:
 NAME       STATUS    INTERNAL-URL       EXTERNAL-URL
 jupyter    Running   jupyter.default    http://jupyter.boomerang68.hasura-app.io
-quandl     Running   quandl.default     http://quandl.boomerang68.hasura-app.io
 
 • Hasura microservices:
 NAME            STATUS    INTERNAL-URL           EXTERNAL-URL
@@ -122,50 +72,18 @@ sshd            Running   sshd.hasura
 
 You can access the services at the `EXTERNAL-URL` for the respective service.
 
-## Exploring the data
+## Exploring Jupyter
 
-Currently our database has not gotten any data from quandl. You can head over to your `api console` to check this out. It will have one table called `quandl_checkpoint` which stores the current offset at which the data in Hasura is stored.
-
-```sh
-$ # Run this in the quandl-jupyter-risk-modeling directory
-$ hasura api-console
-```
-
-![Console Data 1](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/console_data_initial.png "Console Data 1")
-
-Let's use our `quandl` service to insert some data. To do this:
-
-```
-POST https://quandl.<CLUSTER-NAME>.hasura-app.io/add_data // remember to replace <CLUSTER-NAME> with your own cluster name (In this case, http://quandl.boomerang68.hasura-app.io/add_data)
-
-{
-    "vendor_code": "WIKI",
-    "datatable_code": "PRICES"
-}
-```
-
-You can use a HTTP client of your choosing to make this request. Alternatively, you can also use the `API Explorer` provided by the Hasura `api console` to do this.
-
-![Console Data 2](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/console_api_explorer_quandl_api.png "Console Data 2")
-
-There is also a notebook called `fetch` in the jupyter service which makes the API call to fetch and insert data. Read more in jupyter section below.
-
-Once you have successfully made the above API call. Head back to your `api console` and you will see a new table called `wiki_prices` with about 10000 rows of data in it.
-
-![Console Data 3](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/console_data_wiki_prices.png "Console Data 3")
-
-## Analysing the data using Jupyter notebook
-
-### Open the jupyter service
+### Open the Jupyter service
 
 Head over to the EXTERNAL-URL of your `jupyter` service.
 
-![Jupyter 1](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/jupyter_login.png "Jupyter 1")
+![Jupyter 1](https://raw.githubusercontent.com/hasura/scipy-jupyter-notebook/master/assets/jupyter_login.png "Jupyter 1")
 
 ### Authentication
 
 ```sh
-$ # Run this in the quandl-jupyter-risk-modeling directory
+$ # Run this in the r-jupyter-notebook directory
 $ hasura ms logs jupyter
 ```
 
@@ -190,25 +108,26 @@ Executing the command: jupyter notebook
 
 ```
 
+## Customizing your notebook
 
-### Risk Modeling
+Start creating notebooks and showcase your work to the world! If you need to install additional R packages, you can do it in the Jupyter notebook with `install.packages("<package_name">)` but a better way would be to add to the notebook during deployment itself.
 
-After authenticating, go inside the work folder. You will see two files: `fetch.ipynb` and `risk.ipynb`
+To do this, simply customise the Dockerfile present in microservices/jupyter folder.
+```
+$ #Ensure that you are in the r-jupyter-notebook directory
+$ vim microservices/jupyter/Dockerfile
+$ cat microservices/jupyter/Dockerfile
 
-![Jupyter 2](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/jupyter_workspace.png "Jupyter 2")
+FROM jupyter/r-notebook
 
+#Use conda to install packages
+RUN conda install r-essentials
+RUN conda install r-devtools
+```
 
-Open `risk.ipynb`
+Have fun creating notebooks on Hasura!
 
-Each cell contains a description of its intent. In short, we load a ticker data and apply the GARCH(1,1) model on it.  
+## Resources
 
-![Jupyter 3](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/jupyter_risk_1.png "Jupyter 3")
-
-![Jupyter 4](https://raw.githubusercontent.com/hasura/quandl-jupyter-risk-modeling/master/assets/jupyter_risk_2.png "Jupyter 4")
-
-And that's it! 
-
-
-
-
-
+* [Quandl dataset visualization on Jupyter R notebook](https://hasura.io/hub/project/anirudhm/quandl-r-jupyter)
+* [ggplot2 data visualization examples](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html)
